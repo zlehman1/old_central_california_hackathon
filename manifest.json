@@ -1,0 +1,13 @@
+{
+	"manifest_version": 2,
+   
+	"name": "Wendy",
+	"version": "0.1.0",
+	"description": "USS Dyslexcelsior",
+
+	"content_scripts": [{
+	  "css": ["styles.css"],
+	  "js": ["content.js"],
+	  "matches": ["<all_urls>"]
+	}]
+  }

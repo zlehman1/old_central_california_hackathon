@@ -1,0 +1,228 @@
+//"matches": ["<all_urls>"]
+//"background": { "scripts": ["hotreload.js"] },
+
+
+res = html.match(regex);
+console.log('1:' + res);
+
+res = regex.exec(html); 
+console.log('2:' + res);
+
+console.log('finished');
+
+
+function toMarkup($this) {
+    var text = $this.text();
+    text = text.replace("\*\*(.*)\*\*", "<b>$1</b>");
+    text = text.replace("__(.*)__", "<u>$1</u>");
+    text = text.replace("~~(.*)~~", "<i>$1</i>");
+    text = text.replace("--(.*)--", "<del>$1</del>");
+    text = text.replace("<<(.*)>>", "<a href='$1'>Link</a>");
+    $this.html(text);
+}
+
+
+var images = document.getElementsByTagName("img");
+for (var i = 0; i < images.length; i++) {
+  images[i].src =
+    "http://placekitten.com/" + images[i].width + "/" + images[i].height;
+}
+
+function extractContent(html) {
+    return (new DOMParser).parseFromString(html, "text/html") . 
+        documentElement . textContent;
+}
+
+
+function isProtected(char) {
+	//console.log('Checking ' + char[0] + ' at char.index: ' + char.index);
+	for (let i = 0; i<protectedAreas.length; i++) {
+		if (char.index >= protectedAreas[i].start && char.index < protectedAreas[i].end) {
+			//console.log(char.index + ">=" + protectedAreas[i].start +" && " + char.index +"<"+ protectedAreas[i].end);
+			return true;
+		}	
+	}
+	//console.log(char.index + ">=" + protectedAreas[i].start +" && " + char.index +"<="+ protectedAreas[i].end);
+	return false;
+}
+
+// swap bgcolors
+/*
+var divs = document.getElementsByTagName("div");
+for (var i = 0; i < divs.length; i++) {
+	if (!divs[i].style.backgroundColor)
+  		divs[i].style = "background-color: #F0F0FA";
+}
+*/
+
+
+
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+
+
+
+function ColorLuminance(hex, lum) {
+  // validate hex string
+  hex = String(hex).replace(/[^0-9a-f]/gi, "");
+  if (hex.length < 6) {
+    hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+  }
+  lum = lum || 0;
+
+  // convert to decimal and change luminosity
+  var rgb = "#",
+    c,
+    i;
+  for (i = 0; i < 3; i++) {
+    c = parseInt(hex.substr(i * 2, 2), 16);
+    c = Math.round(Math.min(Math.max(0, c + c * lum), 255)).toString(16);
+    rgb += ("00" + c).substr(c.length);
+  }
+
+  return rgb;
+}
+
+
+
+
+
+var characterSequences = [
+"oar",
+"igh",
+"ai",
+"oa",
+"ow",
+"oe",
+"ie",
+"ei",
+"ay",
+"au",
+"ir",
+"er",
+"ur",
+"oo",
+"ue",
+"ui"
+];
+
+// push the alphabet onto characterSequences
+var alphabet = "abcdefghijklmnopqrstuvwxyz".split("");
+for (let i=0; i<alphabet.length; i++) {
+	characterSequences.push(alphabet[i]);
+}
+
+// swap bgcolors
+var divs = document.getElementsByTagName("div");
+for (var i = 0; i < divs.length; i++) {
+  divs[i].style = "background-color: #E6E6FA";
+}
+
+function lastLetterIndex(res) {
+	return res.index + res[0].length;
+}
+
+function isProtected(idx) {
+	for (let i = 0; i<protectedAreas.length; i++) {
+		if (idx >= protectedAreas[i].start && idx < protectedAreas[i].end) {
+			//console.log(char.index + ">=" + protectedAreas[i].start +" && " + char.index +"<"+ protectedAreas[i].end);
+			return true;
+		}	
+	}
+	return false;
+}
+
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+var html = document.body.innerHTML;
+
+var patt = /<.*?>/g;
+var result = '';
+var protectedAreas = [];
+
+// store the location for all the < > elements so we can NOT execute 
+// the regex inside of them
+while ( result  = patt.exec(html)) {
+	protectedAreas.push({
+		start: result.index,
+		end: lastLetterIndex(result)
+	})
+}
+
+/**********  Start swap characters for letters ************/
+patt = /./g;
+var char = '';
+/* we need to surround each chart with a font tag, but we need to do it
+back to front.  So let's loop through the characters and them to an array
+of objects 
+*/
+var charIndexes = [];
+
+while (char  = patt.exec(html)) {
+	//console.log(char[0] + '  Protected: ' + isProtected(char.index));
+	if (!isProtected(char)) {
+		//console.log(char + ' at index ' + char.index);
+		charIndexes.push({
+			idx: char.index,
+			ch: char[0]
+		})
+	}
+}
+
+var colorIndex = {};
+
+/* randomize a color set for each letter or letter combo */
+for (let i = 0; i < characterSequences.length; i++) {
+	// this is a random color generate for hex color codes
+	// break it out for readability
+	var hexColor = '#'+Math.floor(Math.random()*16777215).toString(16);
+	colorIndex[characterSequences[i]] = hexColor;
+	//console.log(i + ' ' + hexColor);
+}
+
+var newHTML = '';
+var htmlCharacters = html.split("");
+for (let i=0; i<htmlCharacters.length; i++) {
+	if (htmlCharacters[i] === ' ') {
+		newHTML += htmlCharacters[i];
+	}
+	else if (isProtected(i)) {
+		newHTML += htmlCharacters[i];
+	}
+	else {
+		newHTML += '<font color="' + colorIndex[htmlCharacters[i]] + '">' + htmlCharacters[i] + '</font>';
+	}
+}
+
+
+console.log(newHTML);
+document.body.innerHTML = newHTML;
+console.log('finished');
+
+
+
+
+
+
+
+
+
+#masthead,
+#primary {
+  -webkit-filter: invert(100%);
+  filter: invert(100%);
+  background-color: #fff;
+  padding: 20px !important;
+}
+#masthead {
+  background: none;
+}
+#masthead img,
+#primary img {
+  -webkit-filter: invert(100%);
+  filter: invert(100%);
+}
